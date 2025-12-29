@@ -5,7 +5,7 @@ import datetime
 
 from enum import Enum
 
-PATH_TO_FILE = "../data/input/input.csv"
+PATH_TO_FILE = "./data/input/input.csv"
 
 class DataType(Enum):
     INTEGER = 0
@@ -19,8 +19,6 @@ class Data():
 
         self._import_data_as_dict(filename)
         self._normalize_all_data()
-
-        print(self.generated_data["date"])
     
     def _import_data_as_dict(self, filename):
         date = []
@@ -53,7 +51,7 @@ class Data():
         string = string.translate(str.maketrans(',', '.', ' "!@#$'))
         return string
     
-    def _convert_string_to_value(self, string, datatype):
+    def _try_convert_string_to_value(self, string, datatype):
         try:
             match(datatype):
                 case DataType.INTEGER:
@@ -61,9 +59,9 @@ class Data():
                 case DataType.FLOAT:
                     value = float(string)
                 case DataType.DATE:
-                    value = datetime.date.fromisoformat(string)
+                    value = self._try_convert_string_to_date(string)
                 case _:
-                    raise Exception(f"Invalid datatype {datatype} in {os.path.abspath(__file__)} in {self._convert_string_to_value.__name__}.")
+                    raise Exception(f"Invalid datatype {datatype} in {os.path.abspath(__file__)} in {self._try_convert_string_to_value.__name__}.")
         except ValueError as e:
             sys.exit(f"ValueError: Could not convert string to datatype {datatype} (likely due to invalid formatting of your .csv): {e}")
         return value
@@ -72,13 +70,36 @@ class Data():
         normalized_input = []
         for value in input:
             value = self._clean_string(value)
-            normalized_input.append(self._convert_string_to_value(value, datatype))
+            normalized_input.append(self._try_convert_string_to_value(value, datatype))
         return normalized_input
 
     def _normalize_all_data(self):
         self.generated_data["date"] = self._normalize_input(self.source_data["date"], DataType.DATE)
         self.generated_data["kcal"] = self._normalize_input(self.source_data["kcal"], DataType.INTEGER)
-        self.generated_data["weight"] = self._normalize_input(self.source_data["weight"], DataType.FLOAT)       
+        self.generated_data["weight"] = self._normalize_input(self.source_data["weight"], DataType.FLOAT)
+
+    def add(self, data, key):
+        for _, v in self.generated_data.items():
+            if len(v) != len(data):
+                raise NotImplementedError("TODO: Make sure to enforce consistent length for all lists stored in generated data (class Data).")
+        self.generated_data[key] = data
+
+    def get_by_date(self, key, date_from, date_to=None):
+        if key not in self.generated_data.keys():
+            return None
+        if date_to is None:
+            date_to = date_from
+        if not isinstance(date_from, datetime.date):
+            self._try_convert_string_to_date(date_from)
+        if not isinstance(date_to, datetime.date):
+            self._try_convert_string_to_date(date_to)
 
 
-source = Data()
+    def _try_convert_string_to_date(self, string):
+        try:
+            return datetime.date.fromisoformat(string)
+        except ValueError as e:
+            raise NotImplementedError(f"TODO: Handle failed string to date conversion in _try_convert_string_to_date: {e}")
+
+if __name__ == '__main__':
+    Data()
