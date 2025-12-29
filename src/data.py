@@ -42,6 +42,12 @@ class Data():
         if(self._has_duplicates(self.source_data["date"])):
             sys.exit(f"Error: Duplicate entries in column 'date' in '{filename}' are invalid. Exiting... .")
 
+        #TODO: maybe handle missing values differently. This might make it a bit annoying to add single values to a dataset, might need to remove lines with empty values for calculation instead
+        if (self._has_empty_values(self.source_data["date"]) or
+            self._has_empty_values(self.source_data["kcal"]) or
+            self._has_empty_values(self.source_data["weight"])):
+            sys.exit(f"Error: Dataset '{filename}' has missing values. Exiting... .")
+
     def _clean_string(self, string):
         if not string:
             return "0"
@@ -69,8 +75,13 @@ class Data():
         for value in data:
             if value in unique_values:
                 return True
-            unique_values.add(value)
-        
+            unique_values.add(value)       
+        return False
+
+    def _has_empty_values(self, data):
+        for value in data:
+            if not value:
+                return True
         return False
 
     def _normalize_input(self, input, datatype):

@@ -40,3 +40,12 @@ class TestMath(unittest.TestCase):
                             sum(data[3:8])/5, sum(data[4:9])/5, sum(data[5:9])/4, 
                             sum(data[6:9])/3, sum(data[7:9])/2, data[8]]
         self.assertEqual(output_is, output_should_be)
+
+    ''' Test does and probably should fail.
+    def test_calculate_moving_average_missing_value(self):
+        data = [10, 15, 12, '', 15, 12, 21, 7, 10]
+        output_is = Math_m.calculate_moving_average(data, 5)
+        output_should_be = [sum(data[0:1])/1, sum(data[0:2])/2, sum(data[0:3])/3,
+                            sum(data[0:4])/4, sum(data[0:5])/5, sum(data[1:6])/5,
+                            sum(data[2:7])/5, sum(data[3:8])/5, sum(data[4:9])/5]
+        self.assertEqual(output_is, output_should_be) '''
