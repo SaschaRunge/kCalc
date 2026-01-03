@@ -30,24 +30,24 @@ class Data():
         csv_loader = CSVLoader(filename)
         self.source_data = csv_loader.load_as_dict()
         
-        if(self._has_duplicates(self.source_data["date"])):
+        if(Data._has_duplicates(self.source_data["date"])):
             raise InvalidInputException(f"Error: Duplicate entries in column 'date' in '{filename}' are invalid.")
 
         #TODO: maybe handle missing values differently. This might make it a bit annoying to add single values to a dataset, might need to remove lines with empty values for calculation instead
-        if (self._has_empty_values(self.source_data["date"]) or
-            self._has_empty_values(self.source_data["kcal"]) or
-            self._has_empty_values(self.source_data["weight"])):
+        if (Data._has_empty_values(self.source_data["date"]) or
+            Data._has_empty_values(self.source_data["kcal"]) or
+            Data._has_empty_values(self.source_data["weight"])):
             raise InvalidInputException(f"Error: Dataset '{filename}' has missing values.")
     
-    def _has_duplicates(self, data):
-        unique_values = set()
-        for value in data:
-            if value in unique_values:
-                return True
-            unique_values.add(value)       
-        return False
+    @staticmethod
+    def _has_duplicates(data):
+        """
+        Do NOT use for floats.
+        """
+        return len(data) != len(set(data))
 
-    def _has_empty_values(self, data):
+    @staticmethod
+    def _has_empty_values(data):
         for value in data:
             if not value:
                 return True
@@ -68,7 +68,7 @@ class Data():
                         raise InvalidTypeException(f"Invalid datatype {datatype!r}.")
                 normalized_input.append(value)
         except ValueError as e:
-            raise InvalidInputException(f"InvalidInputException: Could not convert string to datatype {datatype!r} (likely due to invalid formatting of your .csv): {e}") 
+            raise InvalidInputException(f"Could not convert string to datatype {datatype!r} (likely due to invalid formatting of your .csv): {e}") 
 
         return normalized_input
 
@@ -83,40 +83,59 @@ class Data():
                 raise NotImplementedError("TODO: Make sure to enforce consistent length for all lists stored in generated data (class Data).")
         self.data[key] = data
 
-    ### Returns the specified data in column key between two dates. If the end date is earlier than the start date, end date is set to start date. ###
-    def get_by_date(self, key, date_start, date_end=None):
+    def get_by_date(self, key, start_date, end_date=None):
+        """
+        Returns the specified data in column key between two dates. 
+        
+        If the end date is earlier than the start date, end date is set to start date.
+        """
+
         dates = self.data["date"]
 
-        if key not in self.data:
-            return None
-        if not dates:
+        if (key not in self.data or
+            not dates):
             return []
         
-        if not isinstance(date_start, datetime.date):
-            date_start = Parser.parse_date(date_start)
-        if date_end is None:
-            date_end = date_start
-        elif not isinstance(date_end, datetime.date):
-            date_end = Parser.parse_date(date_end)
+        if not isinstance(start_date, datetime.date):
+            start_date = Parser.parse_date(start_date)
+        if end_date is None:
+            end_date = start_date
+        elif not isinstance(end_date, datetime.date):
+            end_date = Parser.parse_date(end_date)
 
-        if date_end < date_start:
-            date_end = date_start
+        if end_date < start_date:
+            end_date = start_date
 
-        i = 0
-        while (i < len(dates) and date_start > dates[i]):
-            i += 1
-        if i < len(dates) and date_start >= dates[i]:
-            lower_index = i
-        else:
+        return_values = []
+        for i in range(len(dates)):
+            if dates[i] >= start_date and dates[i] <= end_date:
+                return_values.append(self.data[key][i])
+            if dates[i] > end_date:
+                break
+        return return_values
+    
+    def get_window(self, key, start_date, days):
+        """
+        Returns data from date_start for the specified amount of days, date_start-inclusive.
+        """
+
+        dates = self.data["date"]
+
+        if (days == 0 or 
+            key not in self.data or 
+            not dates):
             return []
-        while (i < len(dates) and date_end > dates[i]):
-            i += 1
-        if i < len(dates):
-            upper_index = i
-        else:
-            upper_index = len(dates) - 1
+        
+        if not isinstance(start_date, datetime.date):
+            start_date = Parser.parse_date(start_date)
 
-        return  self.data[key][lower_index:upper_index + 1]
+        if days > 0:
+            end_date = start_date + datetime.timedelta(days=(days - 1))
+        elif days < 0:
+            end_date = start_date + datetime.timedelta(days=(days + 1))
+            start_date, end_date = end_date, start_date
+      
+        return self.get_by_date(key, start_date, end_date)
 
 if __name__ == '__main__':
     Data()

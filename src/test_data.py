@@ -38,6 +38,12 @@ class TestData(unittest.TestCase):
                           datetime.date.fromisoformat("2025-06-01")]
         self.assertEqual(data_is, data_should_be)
 
+    def test_get_data_by_date_into_missing_values(self):
+        data = Data(FILEPATH)
+        data_is = data.get_by_date("kcal", "2025-05-08", "2025-05-22")
+        data_should_be = [2861, 2325, 2537]
+        self.assertEqual(data_is, data_should_be)
+
     def test_get_data_by_date_single_front(self):
         data = Data(FILEPATH)
         data_is = data.get_by_date("date", "2025-04-09")
@@ -55,4 +61,43 @@ class TestData(unittest.TestCase):
         data_is = data.get_by_date("kcal", "2025-05-05")
         data_should_be = [2286]
         self.assertEqual(data_is, data_should_be)
+
+    def test_get_window_single(self):
+        data = Data(FILEPATH)
+        data_is = data.get_window("kcal", "2025-05-05", 1)
+        data_should_be = [2286]
+        self.assertEqual(data_is, data_should_be)
+
+    def test_get_window_forward(self):
+        data = Data(FILEPATH)
+        data_is = data.get_window("kcal", "2025-05-05", 5)
+        data_should_be = [2286, 2572, 2258, 2861, 2325]
+        self.assertEqual(data_is, data_should_be)
+
+    def test_get_window_backward(self):
+        data = Data(FILEPATH)
+        data_is = data.get_window("kcal", "2025-05-05", -5)
+        data_should_be = [2256, 2196, 2493, 2510, 2286] # going backward still orders chronologically, which is intended
+        self.assertEqual(data_is, data_should_be)
+    
+    def test_get_window_into_missing_values(self):
+        data = Data(FILEPATH)
+        data_is = data.get_window("kcal", "2025-05-08", 15)
+        data_should_be = [2861, 2325, 2537]
+        self.assertEqual(data_is, data_should_be)
+
+    def test_get_window_into_key_missing(self):
+        data = Data(FILEPATH)
+        data_is = data.get_window("thisdoesnotexist", "2025-05-08", 15)
+        data_should_be = []
+        self.assertEqual(data_is, data_should_be)
+
+    def test_data_has_duplicates(self):
+        data = ["2025-05-06","2025-05-07", "2025-05-08", "2025-05-08", "2025-05-12"]
+        self.assertTrue(Data._has_duplicates(data))
+
+    def test_data_has_no_duplicates(self):
+        data = ["2025-05-06","2025-05-07", "2025-05-08", "2025-05-010", "2025-05-12"]
+        self.assertFalse(Data._has_duplicates(data))
+
 
