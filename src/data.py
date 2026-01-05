@@ -22,9 +22,11 @@ class DataSet():
     def __init__(self, filename = PATH_TO_FILE):
         self._source_data = {}       # raw input
         self._data = {}              # complete, normalized dataset
+        self._filename = filename
 
         self._import_from_csv(filename)
         self._normalize_data()
+        self._check_data_is_valid()
 
     def __len__(self):
         if not self._data:
@@ -35,16 +37,20 @@ class DataSet():
     def _import_from_csv(self, filename):
         csv_loader = CSVLoader(filename)
         self._source_data = csv_loader.load_as_dict()
+
+    def _check_data_is_valid(self):
+        if(DataSet._has_duplicates(self._data["date"])):
+            raise InvalidInputException(f"Duplicate entries in column 'date' in '{self._filename}' are invalid.")
         
-        if(DataSet._has_duplicates(self._source_data["date"])):
-            raise InvalidInputException(f"Error: Duplicate entries in column 'date' in '{filename}' are invalid.")
+        if(not DataSet._is_chronologically_ordered(self._data["date"])):
+            raise InvalidInputException(f"Column 'date' in '{self._filename}' is not chronologically ordered.")
 
         #TODO: maybe handle missing values differently. This might make it a bit annoying to add single values to a dataset, might need to remove lines with empty values for calculation instead
-        if (DataSet._has_empty_values(self._source_data["date"]) or
-            DataSet._has_empty_values(self._source_data["kcal"]) or
-            DataSet._has_empty_values(self._source_data["weight"])):
-            raise InvalidInputException(f"Error: Dataset '{filename}' has missing values.")
-    
+        if (DataSet._has_empty_values(self._data["date"]) or
+            DataSet._has_empty_values(self._data["kcal"]) or
+            DataSet._has_empty_values(self._data["weight"])):
+            raise InvalidInputException(f"Dataset '{self._filename}' has missing values.")     
+              
     @staticmethod
     def _has_duplicates(data):
         """
@@ -60,11 +66,20 @@ class DataSet():
         return False
     
     @staticmethod
+    def _is_chronologically_ordered(data):
+        previous_date = datetime.datetime.min.date()
+        for date in data:
+            if date < previous_date:
+                return False
+            previous_date = date
+        return True
+            
+    @staticmethod
     def _to_date(date) -> datetime.date:
         if isinstance(date, datetime.date):
             return date
         return Parser.parse_date(date)
-
+    
     def _normalize(self, string, datatype):
             try:
                 match(datatype):
@@ -114,11 +129,12 @@ class DataSet():
                 del self._data[key][i]
                 return True
         return False 
-            
+
+    #TODO: probably should check validity of data after each modification    
     def add_column(self, key, data):
         if len(self) != len(data):
             raise InvalidInputException("Failed to add data to DataSet; Provided data must match the length of the currently present data in DataSet.")
-        self._data[key] = data #self._normalize_list(data, DataType.FLOAT)
+        self._data[key] = data
 
     def add_row(self, overwrite=False, **kwargs):
         for key in kwargs:
@@ -132,24 +148,34 @@ class DataSet():
         if "date" not in kwargs:
             raise NotImplementedError()
         
-        date = DataSet._to_date(kwargs["date"])
+        date = DataSet._to_date(kwargs.pop("date"))
         dates = self._data["date"]
         for i in range(len(dates)):
-            #TODO: normalize each element, not just date
             if date == dates[i]:
-                for key in kwargs:
-                    if key != "date":
-                        self._data[key][i] = kwargs[key]
-                    else:
-                        self._data[key][i] = self._to_date(kwargs[key])
-                break
-            elif date > dates[i]: # first entry in chronological order if date is not present
-                for key in kwargs:
-                    if key != "date":
-                        self._data[key].insert(i, kwargs[key])
-                    else:
-                        self._data[key].insert(i, self._to_date(kwargs[key]))
-                break
+                if not overwrite:
+                    raise InvalidInputException(f"Date {date} already exists. If you mean to overwrite existing data use argument overwrite=True.")
+                self._write_row_at_index(date, i, **kwargs)
+                return
+            elif date < dates[i]: # first entry in chronological order if date is not present
+                self._insert_row_at_index(date, i, **kwargs)
+                return
+        self._append_row(date, **kwargs)
+
+    def _write_row_at_index(self, date, i, **kwargs):
+        for key, value in kwargs.items():
+                self._data[key][i] = value
+        self._data["date"][i] = date
+
+    def _insert_row_at_index(self, date, i, **kwargs):
+        for key, value in kwargs.items():
+                self._data[key].insert(i, value)
+
+        self._data["date"].insert(i, date)
+    
+    def _append_row(self, date, **kwargs):
+        for key, value in kwargs.items():
+                self._data[key].append(value)
+        self._data["date"].append(date)
 
     def get_copy(self, key):
         return self._data[key].copy()
@@ -207,6 +233,3 @@ class DataSet():
             start_date, end_date = end_date, start_date
       
         return self.get_by_date(key, start_date, end_date)
-
-if __name__ == '__main__':
-    DataSet()

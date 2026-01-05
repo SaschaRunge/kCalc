@@ -203,11 +203,49 @@ class TestDataSet(unittest.TestCase):
     def test_data_add_row_append(self):
         data = DataSet(FILEPATH)
         data.add_row(date="2025-06-12", weight=100, kcal=2200)
-        weight_is = data.get_window("weight", "2025-06-08", 10)
-        weight_should_be = [91.5, 91.5, 91.5, 90.9, 100]
-        kcal_is = data.get_window("kcal", "2025-06-08", 10)
-        kcal_should_be = [2811, 2313, 1811, 2818, 2200]
+        weight_is = data.get_window("weight", "2025-06-07", 10)
+        weight_should_be = [91.5, 91.5, 91.5, 91.5, 90.9, 100]
+        kcal_is = data.get_window("kcal", "2025-06-07", 10)
+        kcal_should_be = [2524, 2011, 2313, 1811, 2818, 2200]
         self.assertEqual(weight_is, weight_should_be)
         self.assertEqual(kcal_is, kcal_should_be)
+
+    def test_data_add_row_insert(self):
+        data = DataSet(FILEPATH)
+        data.add_row(date="2025-05-12", weight=100, kcal=2200)
+        weight_is = data.get_by_date("weight", "2025-05-09", "2025-05-31")
+        weight_should_be = [94.5, 94.2, 100.0, 91.8, 92.6, 91.8]
+        kcal_is = data.get_by_date("kcal", "2025-05-09", "2025-05-31")
+        kcal_should_be = [2325, 2537, 2200, 4690, 1148, 2720]
+        self.assertEqual(weight_is, weight_should_be)
+        self.assertEqual(kcal_is, kcal_should_be)
+
+    def test_data_add_row_insert_at_front(self):
+        data = DataSet(FILEPATH)
+        data.add_row(date="2025-04-08", weight=100, kcal=2200)
+        weight_is = data.get_window("weight", "2025-04-05", 8)
+        weight_should_be = [100.0, 97.7, 96.4, 96.4, 96.4]
+        kcal_is = data.get_window("kcal", "2025-04-05", 8)
+        kcal_should_be = [2200, 1039, 2528, 3157, 2000]
+        self.assertEqual(weight_is, weight_should_be)
+        self.assertEqual(kcal_is, kcal_should_be)
+
+    def test_data_add_row_overwrite(self):
+        data = DataSet(FILEPATH)
+        data.add_row(date="2025-06-08", weight=100, kcal=2200, overwrite=True)
+        weight_is = data.get_window("weight", "2025-06-07", 10)
+        weight_should_be = [91.5, 100.0, 91.5, 91.5, 90.9]
+        kcal_is = data.get_window("kcal", "2025-06-07", 10)
+        kcal_should_be = [2524, 2200, 2313, 1811, 2818]
+        self.assertEqual(weight_is, weight_should_be)
+        self.assertEqual(kcal_is, kcal_should_be)
+
+    def test_data_add_row_overwrite_fails(self):
+        data = DataSet(FILEPATH)
+        self.assertRaises(InvalidInputException, data.add_row, date="2025-06-06", weight=100, kcal=2200)
+
+
+
+    #TODO: Test chronological order of input
 
 
