@@ -2,18 +2,21 @@ import datetime
 
 class Parser():
     @staticmethod
-    def clean_string(string):
+    def _clean_string(string):
         if not string:
             return "0" #TODO probably should return None with subsequent clean up
         return string.translate(str.maketrans(',', '.', ' "!@#$'))
+    #def _filter_argument(value):
+        #if isinstance(int, value)
+
     
     @staticmethod
     def parse_int(string):
-        return int(Parser.clean_string(string))
+        return int(Parser._clean_string(string))
 
     @staticmethod
     def parse_float(string):
-        return float(Parser.clean_string(string))
+        return float(Parser._clean_string(string))
     
     @staticmethod
     def parse_date(string):
