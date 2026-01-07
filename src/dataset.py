@@ -1,4 +1,5 @@
 import datetime
+import copy
 
 from csv_loader import CSVLoader
 
@@ -18,20 +19,28 @@ class InvalidInputException(Exception):
     pass
 
 class DataSet():
-    def __init__(self, filename = PATH_TO_FILE):
-        self._source_data = {}       # raw input
-        self._data = {}              # complete, normalized dataset
-        self._filename = filename
+    def __init__(self, filename=None):
+        self._source_data = {"date" : [],                   # raw input
+                             "kcal": [],
+                             "weight": []}       
+        self._data = copy.deepcopy(self._source_data)       # complete, normalized dataset
+        self.filename = filename
 
-        self._import_from_csv(filename)
-        self._normalize_data()
-        self._check_data_is_valid()
+        if self.filename is not None:
+            self.load(self.filename)
 
     def __len__(self):
         if not self._data:
             return 0
         first_value = next(iter(self._data.values()))
         return len(first_value)
+    
+    def load(self, filename):
+        self.filename = filename
+
+        self._import_from_csv(filename)
+        self._normalize_data()
+        self._check_data_is_valid()
     
     #TODO: handle exceptions
     def _import_from_csv(self, filename):
@@ -40,16 +49,16 @@ class DataSet():
 
     def _check_data_is_valid(self):
         if(DataSet._has_duplicates(self._data["date"])):
-            raise InvalidInputException(f"Duplicate entries in column 'date' in '{self._filename}' are invalid.")
+            raise InvalidInputException(f"Duplicate entries in column 'date' in '{self.filename}' are invalid.")
         
         if(not DataSet._is_chronologically_ordered(self._data["date"])):
-            raise InvalidInputException(f"Column 'date' in '{self._filename}' is not chronologically ordered.")
+            raise InvalidInputException(f"Column 'date' in '{self.filename}' is not chronologically ordered.")
 
         #TODO: maybe handle missing values differently. This might make it a bit annoying to add single values to a dataset, might need to remove lines with empty values for calculation instead
         if (DataSet._has_empty_values(self._data["date"]) or
             DataSet._has_empty_values(self._data["kcal"]) or
             DataSet._has_empty_values(self._data["weight"])):
-            raise InvalidInputException(f"Dataset '{self._filename}' has missing values.")     
+            raise InvalidInputException(f"Dataset '{self.filename}' has missing values.")  
               
     @staticmethod
     def _has_duplicates(data):
@@ -57,13 +66,6 @@ class DataSet():
         Do NOT use for floats.
         """
         return len(data) != len(set(data))
-
-    @staticmethod
-    def _has_empty_values(data):
-        for value in data:
-            if not value:
-                return True
-        return False
     
     @staticmethod
     def _is_chronologically_ordered(data):
@@ -73,6 +75,17 @@ class DataSet():
                 return False
             previous_date = date
         return True
+
+    @staticmethod
+    def _has_empty_values(data):
+        for value in data:
+            if not value:
+                return True
+        return False
+    
+    @staticmethod
+    def empty():   
+        return DataSet(None)
             
     @staticmethod
     def _to_date(date) -> datetime.date:
@@ -151,10 +164,10 @@ class DataSet():
         for key in kwargs:
             if key not in self._data:
                 raise InvalidInputException(f"No such key '{key}' exists.")
-            if key == "kcal" or key == "weight":
+            if (key == "kcal" or key == "weight") and isinstance(kwargs[key], str):
                 try:
                     Parser.parse_float(kwargs[key])
-                except:
+                except ValueError:
                     raise InvalidInputException(f"Invalid input for column {key}. Input must parse to a number (int/float).")
         for key in self._data:
             if key not in kwargs:

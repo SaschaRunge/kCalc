@@ -285,6 +285,17 @@ class TestDataSet(unittest.TestCase):
         data = DataSet(FILEPATH)
         self.assertFalse(data.delete_row("2025-06-12"))
 
+    def test_dataset_empty(self):
+        data = DataSet.empty()
+        self.assertFalse(data.delete_row("2025-06-12"))
+        self.assertEqual(data.get_window("kcal", "2025-05-05", 5), [])
+        data.add_row(date="2025-06-08", weight=100, kcal=2200)
+        self.assertEqual(data.get_window("date", "2025-06-08", 1), [datetime.date.fromisoformat("2025-06-08")])
+        self.assertEqual(data.get_window("kcal", "2025-06-08", 1), [2200])
+        self.assertEqual(data.get_window("weight", "2025-06-08", 1), [100])
+        self.assertFalse(data.delete_row("2025-06-12"))
+        self.assertTrue(data.delete_row("2025-06-08"))
+
     #TODO: Test chronological order of input
 
 
