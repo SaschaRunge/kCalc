@@ -1,5 +1,6 @@
 import csv
 
+#TODO: safe implementation via tempfile
 class CSVWriter():
     def __init__(self, file):
         self.file = file

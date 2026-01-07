@@ -27,7 +27,7 @@ class DataSet():
         self.filename = filename
 
         if self.filename is not None:
-            self.load(self.filename)
+            self.read(self.filename)
 
     def __len__(self):
         if not self._data:
@@ -35,7 +35,7 @@ class DataSet():
         first_value = next(iter(self._data.values()))
         return len(first_value)
     
-    def load(self, filename):
+    def read(self, filename):
         self.filename = filename
 
         self._import_from_csv(filename)

@@ -4,9 +4,7 @@ from math_m import Math_m
 from cli import CLI
 
 def main():
-    application = Application()
-    dataset = DataSet()
-    cli = CLI(dataset)
+    cli = CLI()
     cli.run()
 
 if __name__ == '__main__':
