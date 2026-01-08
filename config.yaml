@@ -1,0 +1,9 @@
+#amount of days that are used for calculations. Usually higher means more accurate representation, but results may lag behind the actual, true values.
+calculation_interval_days: 21 
+
+#amount of kcal that is estimated to be contained within one kg of bodyfat. 
+#Note: pure fat has about 9000 kcal worth of energy, but bodyfat has about 13 to 14% water/protein content.
+kcal_per_kg_fat: 7700
+
+#weekly weight loss goal in grams:
+weekly_weight_loss_goal: 500

@@ -1,23 +1,38 @@
+from datetime import datetime
 import sys
+
 from csv_writer import CSVWriter
 from dataset import DataSet
 from application import Application
 
 class CLI():
     def __init__(self):
-        self.valid_input = {"add": ["add", "a"],
+        self.valid_input = {
+                    "add": ["add", "a"],
                     "remove": ["remove", "r"],
                     "show": ["show", "s"],
                     "read": ["read", "re"],
                     "write": ["write", "w"],
                     "quit": ["quit", "q"],
-}
+                    }
         self.application = Application()
         
     def run(self):
-        print("")
-        print(f"{' kCalc ':=^50}")
-        print("")
+        print(f"\n{' kCalc ':=^50}\n")
+        weight = f"{self.application.get_last_known("weight")} kg"
+        weight_loss = self.application.weekly_weight_loss()
+        weight_loss = f"{int(weight_loss)} g" if weight_loss is not None else "NaN"
+        tdee = self.application.tdee()
+        tdee = f"{int(tdee)}" if tdee is not None else "NaN"
+        tdee_adjusted = self.application.tdee_adjusted()
+        tdee_adjusted = f"{int(tdee_adjusted)}" if tdee_adjusted is not None else "NaN"
+        whitespace = "     "
+        status_str = (
+                    f"Date: {datetime.today().strftime('%Y-%m-%d')}{whitespace}"
+                    f"Weight: {weight}{whitespace}"
+                    f"Weekly weightloss est.: {weight_loss}{whitespace}"
+                    f"TDEE: {tdee}({tdee_adjusted}) kcal{whitespace}")
+        print(f"\n{status_str}\n")
 
         while True:
             cmd = input("> ")
@@ -34,6 +49,7 @@ class CLI():
                     try:
                         self.application.add(date, kcal, weight, True)
                     except ValueError as e:
+                        #TODO: explain propper usage
                         print(f"\nInvalid arguments '{args}'. Could not add data.\n")
                 else:
                     print(f"\nInvalid arguments '{args}'. Could not add data.\n")

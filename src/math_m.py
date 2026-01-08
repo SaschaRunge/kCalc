@@ -26,9 +26,9 @@ class Math_m():
 
         s_x = sum(x_values)
         s_y = sum(y_values)
-        s_xx = sum(Math_m._mulitply_lists(x_values, x_values))
-        s_yy = sum(Math_m._mulitply_lists(y_values, y_values))
-        s_xy = sum(Math_m._mulitply_lists(x_values, y_values))
+        s_xx = sum(Math_m.mulitply_lists(x_values, x_values))
+        s_yy = sum(Math_m.mulitply_lists(y_values, y_values))
+        s_xy = sum(Math_m.mulitply_lists(x_values, y_values))
 
         n = len(x_values)
 
@@ -38,13 +38,37 @@ class Math_m():
         return m, b
     
     @staticmethod
-    def _mulitply_lists(list1, list2):
+    def mulitply_lists(list1, list2):
         result = []
 
         if len(list1) != len(list2):
-            raise ValueError(f"Uneven length of lists provided to Math_m._multiply_lists: ({len(list1)} != {len(list2)})")
+            raise ValueError(f"Uneven length of lists provided to Math_m.multiply_lists: ({len(list1)} != {len(list2)})")
 
         for value1, value2 in zip(list1, list2):
             result.append(value1 * value2)
+
+        return result
+    
+    @staticmethod
+    def add_lists(list1, list2):
+        result = []
+
+        if len(list1) != len(list2):
+            raise ValueError(f"Uneven length of lists provided to Math_m.add_lists: ({len(list1)} != {len(list2)})")
+
+        for value1, value2 in zip(list1, list2):
+            result.append(value1 + value2)
+
+        return result
+    
+    @staticmethod
+    def subtract_lists(list1, list2):
+        result = []
+
+        if len(list1) != len(list2):
+            raise ValueError(f"Uneven length of lists provided to Math_m.subtract_lists: ({len(list1)} != {len(list2)})")
+
+        for value1, value2 in zip(list1, list2):
+            result.append(value1 - value2)
 
         return result

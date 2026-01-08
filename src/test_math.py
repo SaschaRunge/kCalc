@@ -55,7 +55,7 @@ class TestHelper(unittest.TestCase):
         array1 = [1, 2, -3, 0]
         array2 = [4, 7, 2, 5]
 
-        output_is = Math_m._mulitply_lists(array1, array2)
+        output_is = Math_m.mulitply_lists(array1, array2)
         output_should_be = [4, 14, -6, 0]
         self.assertEqual(output_is, output_should_be)
 
@@ -63,7 +63,7 @@ class TestHelper(unittest.TestCase):
         array1 = []
         array2 = []
 
-        output_is = Math_m._mulitply_lists(array1, array2)
+        output_is = Math_m.mulitply_lists(array1, array2)
         output_should_be = []
         self.assertEqual(output_is, output_should_be)
 
@@ -71,7 +71,51 @@ class TestHelper(unittest.TestCase):
         array1 = [1, 2, -3]
         array2 = [4, 7, 2, 5]
 
-        self.assertRaises(ValueError, Math_m._mulitply_lists, array1, array2)
+        self.assertRaises(ValueError, Math_m.mulitply_lists, array1, array2)
+
+    def test_add_lists(self):
+        array1 = [1, 2, -3, 0]
+        array2 = [4, 7, 2, 5]
+
+        output_is = Math_m.add_lists(array1, array2)
+        output_should_be = [5, 9, -1, 5]
+        self.assertEqual(output_is, output_should_be)
+
+    def test_add_lists_empty(self):
+        array1 = []
+        array2 = []
+
+        output_is = Math_m.add_lists(array1, array2)
+        output_should_be = []
+        self.assertEqual(output_is, output_should_be)
+
+    def test_add_lists_uneven(self):
+        array1 = [1, 2, -3]
+        array2 = [4, 7, 2, 5]
+
+        self.assertRaises(ValueError, Math_m.add_lists, array1, array2)
+
+    def test_subtract_lists(self):
+        array1 = [1, 9, -3, 0]
+        array2 = [4, 7, 2, 5]
+
+        output_is = Math_m.subtract_lists(array1, array2)
+        output_should_be = [-3, 2, -5, -5]
+        self.assertEqual(output_is, output_should_be)
+
+    def test_subtract_lists_empty(self):
+        array1 = []
+        array2 = []
+
+        output_is = Math_m.subtract_lists(array1, array2)
+        output_should_be = []
+        self.assertEqual(output_is, output_should_be)
+
+    def test_subtract_lists_uneven(self):
+        array1 = [1, 2, -3]
+        array2 = [4, 7, 2, 5]
+
+        self.assertRaises(ValueError, Math_m.subtract_lists, array1, array2)
 
 class TestLinearLeastSquares(unittest.TestCase):
     def test_linear_least_squares_very_short(self):

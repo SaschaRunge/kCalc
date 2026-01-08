@@ -206,8 +206,19 @@ class DataSet():
         self._data["date"].append(date)
 
     def get_copy(self, key):
-        return self._data[key].copy()
+        try:
+            return self._data[key].copy()
+        except KeyError:
+            return []
     
+    def get_last(self, key):
+        try:
+            return self._data[key][-1]
+        except KeyError:
+            return None
+        except IndexError:
+            return None
+
     def get(self):
         return self._data
 
