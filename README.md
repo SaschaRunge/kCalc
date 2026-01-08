@@ -15,11 +15,13 @@ Or run the source directly via python (v3.12). You'll have to have PyYAML instal
 
 You can supply your data by placing a input.csv file within ./data/input/. It needs to contain a column of the following datapoints, each of equal length, with the header information date, weight, kcal. For example:
 
+```
 date,kcal,weight
 2025-04-09,1039,"97,7"
 2025-04-10,2528,"96,4"
 2025-04-11,3157,"96,4"
 2025-04-12,2000,"96,4"
+```
 
 Date should probably follow this format, but can be in any format supported by datetime.fromisoformat(). kcal is best kept as integer values without thousands-delimiter.
 weight does support comma seperation if in quotes, or you can use the usual decimal notation, e.g. 95.5
